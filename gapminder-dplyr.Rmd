@@ -1,5 +1,5 @@
 ---
-title: "gapminder-dplyr"
+title: "Gapminder analysis with dplyr"
 author: "Seba Tapia"
 date: "April 16, 2016"
 output: html_document
@@ -9,22 +9,88 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+## Load dplyr
+```{r load dplyr}
+library(dplyr)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Load gampinder
+```{r gapminder}
+#install.packages('gapminder')
+library(gapminder)
+str(gapminder)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+##Exploration with gapminder
+```{r }
+filter(gapminder, lifeExp < 29)
+#compare without dplyr
+gapminder[gapminder$lifeExp < 29, ]
+filter(gapminder, country == "Rwanda")
+#compare without dplyr
+subset(gapminder, country =="Rwanda")
+a <- filter(gapminder, country %in% c("Rwanda", "Afghanistan"))
+
+#the pipe operator!   %>% 
+#from magrittr package
+
+gapminder %>% head #same as head(gapminder)
+gapminder %>% head(3)  #firs 3 rows, same as head(gapminder, 3)
+
+#subset with the command select
+select(gapminder, year, lifeExp)  #with the %>% 
+gapminder %>% select(year,lifeExp) #whatever is on the left of the %>% , it passes it on as the 1st argument to whatever is to the right
+
+gapminder %>% select(year,lifeExp) %>% head(4)
+
+```
+
+##Calculate statistics in gapminder
+
+```{r filtering with dplyr}
+#calculate mean gdp of cambodia
+gapminder %>% 
+     filter(country=="Cambodia") %>% 
+     select(country, year, pop, gdpPercap)
+     #also select(-continent, -lifeExp) leave out continet and lifeExp
+
+#compare to base R
+gapminder[gapminder$country=="Cambodia", c("country", "year", "pop", "gdpPercap")]
+```
+
+##Continue with mutate (add new variables)
+
+```{r Continue with mutate}
+#calculate mean gdp of cambodia
+
+gapminder %>% 
+     mutate(gdp=pop*gdpPercap) %>% 
+     filter(country=="Cambodia") %>% 
+     select(country, year, pop, gdpPercap, gdp)
+     #also select(-continent, -lifeExp) leave out continet and lifeExp
+
+#exercise 
+#add mutate to the previous analysis, and get the mean gdp
+gapminder %>% 
+     filter(country=="Cambodia") %>% 
+     mutate(gdp=pop*gdpPercap) %>% 
+     select(country, year, pop, gdpPercap, gdp) %>% 
+     group_by(country) %>% 
+     summarize(mean_gdp = mean(gdp)) %>% 
+     ungroup()
+
+#with a for loop
+#for(country in all_countries){
+     #our analysis}
+
+#for all countries, with dplyr
+gapminder %>%
+     mutate(gdp=pop*gdpPercap) %>% 
+     select(country, year, pop, gdpPercap, gdp) %>% 
+     group_by(country) %>% 
+     summarize(mean_gdp = mean(gdp)) %>% 
+     ungroup() 
+```
+
+##**ALWAYS UNGROUP AFTER GROUPING!!!!!!**
+
