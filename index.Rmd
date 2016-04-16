@@ -1,5 +1,5 @@
 ---
-title: "index"
+title: "R mardown tutorial"
 author: "Seba Tapia"      
 date: "April 16, 2016"
 output: html_document
